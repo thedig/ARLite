@@ -4,6 +4,7 @@ require_relative './db_connection.rb'
 
 class AssocParams
   def other_class
+    
   end
 
   def other_table
