@@ -35,6 +35,9 @@ class MassObject
   # takes an array of hashes.
   # returns array of objects.
   def self.parse_all(results)
+    results.map do |h|
+      self.new(h)
+    end
   end
 
   # takes a hash of { attr_name => attr_val }.
