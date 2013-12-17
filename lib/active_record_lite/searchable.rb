@@ -22,13 +22,7 @@ module Searchable
   			#{param_strings.join(" AND ")}
   	SQL
 
-  	puts query_string
-
   	self.parse_all(DBConnection.execute(query_string, *values_arr))
-  # 	hash_array = DBConnection.execute(query_string, *values_arr)
 
-		# hash_array.map do |h|
-  #     self.new(h)
-  #   end
   end
 end

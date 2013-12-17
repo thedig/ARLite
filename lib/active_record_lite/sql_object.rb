@@ -3,20 +3,22 @@ require_relative './db_connection' # use DBConnection.execute freely here.
 require_relative './mass_object'
 require_relative './searchable'
 require 'debugger'
+require 'active_support/inflector'
 
 
 class SQLObject < MassObject
 
   extend Searchable
+  extend Associatable
 
   # sets the table_name
-  def self.set_table_name(table_name)
+  def self.set_table_name(table_name = self.to_s.camelcase.pluralize)
     @table_name = table_name
   end
 
   # gets the table_name
   def self.table_name
-    @table_name
+    @table_name ||= self.set_table_name
   end
 
   # querys database for all records for this type. (result is array of hashes)
@@ -25,14 +27,12 @@ class SQLObject < MassObject
   def self.all
     table_array = DBConnection.execute(<<-SQL)
       SELECT
-        *
+        "#{@table_name}".*
       FROM 
         "#{@table_name}"
     SQL
-    table_array.map do |h|
-      self.new(h)
-    end
-    
+
+    self.parse_all(table_array)
   end
 
   # querys database for record of this type with id passed.
@@ -51,15 +51,22 @@ class SQLObject < MassObject
 
   end
 
+  def self.parse_all(hash_array)
+    hash_array.map do |h|
+      new_h = {}
+      h.each { |k, v| new_h[k.to_sym] = v }
+      self.new(new_h)
+    end
+  end
+
   # executes query that creates record in db with objects attribute values.
   # use send and map to get instance values.
   # after, update the id attribute with the helper method from db_connection
   def create
     attr_count = self.class.attributes.count
     question_mark_string = (['?'] * attr_count).join(", ")
-    attr_vals = self.class.attributes.map { |attr| self.send(attr) }
 
-    DBConnection.execute(<<-SQL, *attr_vals)
+    DBConnection.execute(<<-SQL, *attribute_values)
       INSERT INTO
         "#{self.class.table_name}" (#{self.class.attributes.join(", ")})
       VALUES
@@ -72,13 +79,12 @@ class SQLObject < MassObject
   # executes query that updates the row in the db corresponding to this instance
   # of the class. use "#{attr_name} = ?" and join with ', ' for set string.
   def update
-    #attr_vals = self.class.attributes.map { |attr| self.send(attr) }
     attr_string_parts = self.class.attributes.map { |attr| "#{attr} = ?" } 
     set_lines = attr_string_parts.join(", ")
 
     DBConnection.execute(<<-SQL, *attribute_values)
       UPDATE
-        "#{self.class.table_name}"
+        #{self.class.table_name}
       SET
         #{set_lines}
       WHERE

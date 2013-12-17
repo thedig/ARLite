@@ -2,13 +2,14 @@ require_relative '../lib/active_record_lite'
 
 # https://tomafro.net/2010/01/tip-relative-paths-with-file-expand-path
 cats_db_file_name =
-  File.expand_path(File.join(File.dirname(__FILE__), "cats.db"))
+  File.expand_path(File.join(File.dirname(__FILE__), "../spec/cats.db"))
 DBConnection.open(cats_db_file_name)
 
 class Cat < SQLObject
+
   set_table_name("cats")
   my_attr_accessible(:id, :name, :owner_id)
-
+  my_attr_accessor(:id, :name, :owner_id)
   belongs_to :human, :class_name => "Human", :primary_key => :id, :foreign_key => :owner_id
   has_one_through :house, :human, :house
 end
@@ -16,7 +17,7 @@ end
 class Human < SQLObject
   set_table_name("humans")
   my_attr_accessible(:id, :fname, :lname, :house_id)
-
+  my_attr_accessor(:id, :fname, :lname, :house_id)
   has_many :cats, :foreign_key => :owner_id
   belongs_to :house
 end
@@ -24,6 +25,7 @@ end
 class House < SQLObject
   set_table_name("houses")
   my_attr_accessible(:id, :address, :house_id)
+  my_attr_accessor(:id, :address, :house_id)
 end
 
 cat = Cat.find(1)
