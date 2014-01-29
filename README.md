@@ -1,12 +1,17 @@
 
-# Testing
+# Active Record Lite
 
-This repo contains code for you to test your solution two different ways. One is
-to use RSpec and the other is to run ad-hoc tests with ruby code written for you.
+This project contains the basics of Active Record functionality.  Metaprogramming is used in order to redefine common AR features:
 
-To run the specs simply run `rspec spec/mass_object_spec.rb`
+- __attr_accessible__ and __attr_accessor__
+- __Initial table setup__
+- __Common SQL queries, such as:__
+	* _Find by id_
+	* _Find all_
+	* _Update record_
+	* _Create new record_
+	* _Save_
+- __BelongsTo and HasMany associations__
+- __HasOneThrough__
 
-To run the ad-hoc tests simply run `ruby test/ruby_mass_object_test.rb`
-
-These specs are to act as a basic guide to show you how one would use the
-framework you're building.
+SQL queries are written using Heredocs, leveraging string interpolation to handle a variable number of inputs into the queries. Methods and instance variables are setup through the use of ::send and ::define_method.
