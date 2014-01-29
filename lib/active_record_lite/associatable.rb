@@ -3,69 +3,98 @@ require 'active_support/inflector'
 require_relative './db_connection.rb'
 
 class AssocParams
-  attr_reader(
-    :foreign_key,
-    :other_class_name,
-    :primary_key,
-  )
-
   def other_class
-    @other_class_name.constantize
+    
   end
 
   def other_table
-    other_class.table_name
   end
 end
 
 class BelongsToAssocParams < AssocParams
+  attr_reader :primary_key, :foreign_key, :class_name
+
   def initialize(name, params)
-    @foreign_key = params[:foreign_key] || "#{name}_id".to_sym
-    @other_class_name = params[:class_name] || name.to_s.camelcase
+    @name = name
+    @class_name = params[:class_name] || @name.to_s.singularize.capitalize
+    @foreign_key = params[:foreign_key] || "#{@class_name.to_s.camelcase}_id".to_sym
     @primary_key = params[:primary_key] || :id
   end
 
+  def model_class
+    class_name.constantize
+  end
+
+  def name
+    @name.to_sym
+  end
+
+  def table_name
+    model_class.table_name
+  end
+
   def type
-    :belongs_to
   end
 end
 
 class HasManyAssocParams < AssocParams
+<<<<<<< HEAD
   def initialize(name, params, self_class)
     @foreign_key = (params[:foreign_key] ||
       "#{self_class.name.underscore}_id".to_sym)
     @other_class_name = (params[:class_name] ||
       name.to_s.singularize.camelcase)
+=======
+  attr_reader :primary_key, :foreign_key, :class_name
+
+  def initialize(name, params, self_class)
+    @name = name
+    @self_class = self_class
+    @class_name = params[:class_name] || @name.to_s.singularize.capitalize
+    @foreign_key = params[:foreign_key] || "#{@self_class.to_s.camelcase}_id".to_sym
+>>>>>>> skeleton
     @primary_key = params[:primary_key] || :id
   end
 
+  def model_class
+    class_name.constantize
+  end
+
+  def name
+    @name.to_sym
+  end
+
+  def table_name
+    model_class.table_name
+  end
+
   def type
-    :has_many
   end
 end
 
 module Associatable
   def assoc_params
-    @assoc_params ||= {}
-    @assoc_params
   end
 
   def belongs_to(name, params = {})
-    aps = BelongsToAssocParams.new(name, params)
-    assoc_params[name] = aps
-
-    define_method(name) do
-      results = DBConnection.execute(<<-SQL, self.send(aps.foreign_key))
-        SELECT *
-          FROM #{aps.other_table}
-         WHERE #{aps.other_table}.#{aps.primary_key} = ?
+    options = BelongsToAssocParams.new(name, params)
+    define_method(options.name) do
+      return_val = DBConnection.execute(<<-SQL).first
+        SELECT
+          *
+        FROM
+          #{options.table_name}
+        WHERE
+          #{options.primary_key.to_s} = #{self.send(options.foreign_key.to_s.downcase)}
       SQL
 
-      aps.other_class.parse_all(results).first
+      options.model_class.new(return_val)
+
     end
   end
 
   def has_many(name, params = {})
+<<<<<<< HEAD
     aps = HasManyAssocParams.new(name, params, self)
     assoc_params[name] = aps
 
@@ -74,13 +103,25 @@ module Associatable
         SELECT *
           FROM #{aps.other_table}
          WHERE #{aps.other_table}.#{aps.foreign_key} = ?
+=======
+    options = HasManyAssocParams.new(name, params, self)
+    define_method(options.name) do
+      return_array = DBConnection.execute(<<-SQL)
+        SELECT
+          *
+        FROM
+          #{options.table_name}
+        WHERE
+          #{options.foreign_key.to_s} = #{self.send(options.primary_key.to_s.downcase)}
+>>>>>>> skeleton
       SQL
 
-      aps.other_class.parse_all(results)
+      return_array.map { |hash| options.model_class.new(hash) }
     end
   end
 
   def has_one_through(name, assoc1, assoc2)
+<<<<<<< HEAD
     define_method(name) do
       params1 = self.class.assoc_params[assoc1]
       params2 = params1.other_class.assoc_params[assoc2]
@@ -97,6 +138,11 @@ module Associatable
       SQL
 
       params2.other_class.parse_all(results).first
+=======
+    define_method(name.to_sym) do
+      intermediary = self.send(assoc1)
+      intermediary.send(assoc2)
+>>>>>>> skeleton
     end
   end
 end

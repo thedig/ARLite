@@ -1,17 +1,28 @@
 require 'active_record_lite'
+<<<<<<< HEAD
 require 'debugger'
+=======
+>>>>>>> skeleton
 
 describe "associatable" do
   before(:all) do
     # https://tomafro.net/2010/01/tip-relative-paths-with-file-expand-path
     cats_db_file_name =
+<<<<<<< HEAD
       File.expand_path(File.join(File.dirname(__FILE__), "cats.db"))
+=======
+      File.expand_path(File.join(File.dirname(__FILE__), "../spec/cats.db"))
+>>>>>>> skeleton
     DBConnection.open(cats_db_file_name)
 
     class Cat < SQLObject
       set_table_name("cats")
       my_attr_accessible(:id, :name, :owner_id)
+<<<<<<< HEAD
 
+=======
+      my_attr_accessor(:id, :name, :owner_id)
+>>>>>>> skeleton
       belongs_to :human, :class_name => "Human", :primary_key => :id, :foreign_key => :owner_id
       has_one_through :house, :human, :house
     end
@@ -19,7 +30,11 @@ describe "associatable" do
     class Human < SQLObject
       set_table_name("humans")
       my_attr_accessible(:id, :fname, :lname, :house_id)
+<<<<<<< HEAD
 
+=======
+      my_attr_accessor(:id, :fname, :lname, :house_id)
+>>>>>>> skeleton
       has_many :cats, :foreign_key => :owner_id
       belongs_to :house
     end
@@ -27,6 +42,10 @@ describe "associatable" do
     class House < SQLObject
       set_table_name("houses")
       my_attr_accessible(:id, :address, :house_id)
+<<<<<<< HEAD
+=======
+      my_attr_accessor(:id, :address, :house_id)
+>>>>>>> skeleton
     end
   end
 
@@ -54,4 +73,19 @@ describe "associatable" do
       human.cats.first.should be_instance_of(Cat)
     end
   end
+<<<<<<< HEAD
 end
+=======
+  
+  describe "#has_one_through" do
+    it "adds association as method" do
+      cat.methods.should include(:house)
+    end
+
+    it "adds an association that returns correct type" do
+      cat.house.should be_instance_of(House)
+    end
+  end
+  
+end
+>>>>>>> skeleton

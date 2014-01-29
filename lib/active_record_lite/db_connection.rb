@@ -5,6 +5,7 @@ class DBConnection
     @db = SQLite3::Database.new(db_file_name)
     @db.results_as_hash = true
     @db.type_translation = true
+    @db
   end
 
   def self.execute(*args)
